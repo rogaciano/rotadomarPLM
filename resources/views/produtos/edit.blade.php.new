@@ -1,0 +1,384 @@
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ __('Editar Produto') }}
+            </h2>
+            <div class="flex space-x-2">
+                <!-- Botão Salvar no topo -->
+                <button type="submit" form="produto-form" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Salvar
+                </button>
+                
+                <!-- Botão Voltar -->
+                <a href="{{ request('back_url') ? request('back_url') : route('produtos.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-300 active:bg-gray-300 focus:outline-none focus:border-gray-300 focus:ring focus:ring-gray-200 disabled:opacity-25 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                    </svg>
+                    Voltar
+                </a>
+            </div>
+        </div>
+    </x-slot>
+
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
+                <div class="p-6">
+                    <!-- Erros de validação -->
+                    @if ($errors->any())
+                        <div class="mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4">
+                            <p class="font-bold">Ocorreram erros. Por favor, verifique:</p>
+                            <ul>
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    <form id="produto-form" action="{{ route('produtos.update', $produto->id) }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        @method('PUT')
+
+                        <!-- Form fields remain unchanged -->
+                        
+                        <!-- Seção de Combinações de Cores -->
+                        <div class="mt-6">
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="block text-sm font-medium text-gray-700">Combinações de Cores</label>
+                                <button type="button" id="add-combinacao" class="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                                    </svg>
+                                    Nova Combinação
+                                </button>
+                            </div>
+                            <p class="mt-1 mb-2 text-xs text-gray-500">Crie combinações de cores para este produto, especificando os tecidos e cores utilizados em cada combinação.</p>
+                            <div class="border border-gray-300 rounded-md p-4">
+                                <div id="combinacoes-container">
+                                    <!-- As combinações serão carregadas via JavaScript -->
+                                    <div class="text-center py-4 text-gray-500 italic">
+                                        Clique em "Nova Combinação" para adicionar uma combinação de cores.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Botão de salvar -->
+                        <div class="flex justify-end mt-6">
+                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Salvar Alterações
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para adicionar/editar combinação -->
+    <div id="modal-combinacao" class="fixed z-10 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <!-- Modal content remains unchanged -->
+    </div>
+
+    <!-- Modal para adicionar/editar componente -->
+    <div id="modal-componente" class="fixed z-10 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <!-- Modal content remains unchanged -->
+    </div>
+    
+    <!-- Modal para adicionar anexo -->
+    <div id="modal-anexo" class="fixed z-10 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <!-- Modal content remains unchanged -->
+    </div>
+
+    @push('scripts')
+<script>
+    // Function to delete attachment via AJAX
+    function deleteAttachment(anexoId) {
+        // Function remains unchanged
+    }
+
+    $(document).ready(function() {
+        // Variáveis para combinações
+        const combinacoesContainer = $('#combinacoes-container');
+        let combinacoes = [];
+        
+        // Other variables and functions remain unchanged
+        
+        // Função para carregar cores de um tecido
+        function carregarCoresTecido(tecidoId, corSelecionada = null, codigoCor = null) {
+            if (!tecidoId) {
+                $('#componente-cor').html('<option value="">Selecione um tecido primeiro</option>');
+                $('#componente-cor').prop('disabled', true);
+                return;
+            }
+            
+            $.ajax({
+                url: '{{ url("tecidos") }}/' + tecidoId + '/cores',
+                method: 'GET',
+                success: function(response) {
+                    if (response.success && response.cores && response.cores.length > 0) {
+                        let options = '<option value="">Selecione uma cor</option>';
+                        
+                        response.cores.forEach(function(cor) {
+                            const selected = corSelecionada && cor.cor === corSelecionada ? ' selected' : '';
+                            options += `<option value="${cor.cor}" data-codigo="${cor.codigo_cor || ''}"${selected}>${cor.cor} ${cor.codigo_cor ? `(${cor.codigo_cor})` : ''}</option>`;
+                        });
+                        
+                        $('#componente-cor').html(options);
+                        $('#componente-cor').prop('disabled', false);
+                        
+                        // Se temos uma cor selecionada mas não foi encontrada nas opções, adicionar manualmente
+                        if (corSelecionada && !$('#componente-cor').val()) {
+                            const newOption = `<option value="${corSelecionada}" data-codigo="${codigoCor || ''}" selected>${corSelecionada} ${codigoCor ? `(${codigoCor})` : ''}</option>`;
+                            $('#componente-cor').append(newOption);
+                        }
+                    } else {
+                        $('#componente-cor').html('<option value="">Nenhuma cor disponível</option>');
+                        $('#componente-cor').prop('disabled', true);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $('#componente-cor').html('<option value="">Erro ao carregar cores</option>');
+                    $('#componente-cor').prop('disabled', true);
+                }
+            });
+        }
+        
+        // Funções para gerenciar combinações
+        function carregarCombinacoes() {
+            $.ajax({
+                url: '{{ url("produtos") }}/' + {{ $produto->id }} + '/combinacoes',
+                method: 'GET',
+                success: function(response) {
+                    if (response.success && response.combinacoes && response.combinacoes.length > 0) {
+                        combinacoes = response.combinacoes;
+                        renderizarCombinacoes();
+                    } else {
+                        combinacoesContainer.html('<div class="text-center py-4 text-gray-500 italic">Clique em "Nova Combinação" para adicionar uma combinação de cores.</div>');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    combinacoesContainer.html('<div class="text-center py-4 text-red-500 italic">Erro ao carregar combinações: ' + error + '</div>');
+                }
+            });
+        }
+        
+        // Carregar combinações ao iniciar
+        carregarCombinacoes();
+        
+        // Renderizar combinações
+        function renderizarCombinacoes() {
+            // Function remains unchanged
+        }
+        
+        // Renderizar componentes de uma combinação
+        function renderizarComponentes(componentes) {
+            // Function remains unchanged
+        }
+        
+        // Funções para gerenciar modais
+        function mostrarModalCombinacao(combinacaoId = null) {
+            // Function remains unchanged
+        }
+        
+        function mostrarModalComponente(combinacaoId, componenteId = null) {
+            // Function remains unchanged
+        }
+        
+        // Adicionar nova combinação
+        $(document).on('click', '#add-combinacao', function() {
+            mostrarModalCombinacao();
+        });
+        
+        // Editar combinação existente
+        $(document).on('click', '.editar-combinacao', function() {
+            const combinacaoId = $(this).data('id');
+            mostrarModalCombinacao(combinacaoId);
+        });
+        
+        // Excluir combinação
+        $(document).on('click', '.excluir-combinacao', function() {
+            if (!confirm('Tem certeza que deseja excluir esta combinação?')) {
+                return;
+            }
+            
+            const combinacaoId = $(this).data('id');
+            
+            $.ajax({
+                url: '{{ url("produtos/combinacoes") }}/' + combinacaoId,
+                method: 'DELETE',
+                data: {
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        carregarCombinacoes();
+                    } else {
+                        alert('Erro ao excluir combinação: ' + (response.message || 'Erro desconhecido'));
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert('Erro ao excluir combinação: ' + error);
+                }
+            });
+        });
+        
+        // Salvar combinação
+        $(document).on('click', '#salvar-combinacao', function() {
+            const combinacaoId = $('#combinacao-id').val();
+            const descricao = $('#combinacao-descricao').val();
+            const quantidade = $('#combinacao-quantidade').val();
+            const observacoes = $('#combinacao-observacoes').val();
+            
+            if (!descricao || !quantidade) {
+                alert('Por favor, preencha todos os campos obrigatórios.');
+                return;
+            }
+            
+            const data = {
+                descricao: descricao,
+                quantidade_pretendida: quantidade,
+                observacoes: observacoes,
+                _token: '{{ csrf_token() }}'
+            };
+            
+            let url, method;
+            
+            if (combinacaoId) {
+                // Edição
+                url = '{{ url("produtos/combinacoes") }}/' + combinacaoId;
+                method = 'PUT';
+            } else {
+                // Nova combinação
+                url = '{{ url("produtos") }}/' + {{ $produto->id }} + '/combinacoes';
+                method = 'POST';
+            }
+            
+            $.ajax({
+                url: url,
+                method: method,
+                data: data,
+                success: function(response) {
+                    if (response.success) {
+                        $('#modal-combinacao').addClass('hidden');
+                        carregarCombinacoes();
+                    } else {
+                        alert('Erro ao salvar combinação: ' + (response.message || 'Erro desconhecido'));
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert('Erro ao salvar combinação: ' + error);
+                }
+            });
+        });
+        
+        // Adicionar componente
+        $(document).on('click', '.adicionar-componente', function() {
+            const combinacaoId = $(this).data('combinacao-id');
+            mostrarModalComponente(combinacaoId);
+        });
+        
+        // Editar componente
+        $(document).on('click', '.editar-componente', function() {
+            const componenteId = $(this).data('id');
+            const combinacaoId = $(this).data('combinacao-id');
+            mostrarModalComponente(combinacaoId, componenteId);
+        });
+        
+        // Excluir componente
+        $(document).on('click', '.excluir-componente', function() {
+            if (!confirm('Tem certeza que deseja excluir este componente?')) {
+                return;
+            }
+            
+            const componenteId = $(this).data('id');
+            
+            $.ajax({
+                url: '{{ url("combinacoes/componentes") }}/' + componenteId,
+                method: 'DELETE',
+                data: {
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        carregarCombinacoes();
+                    } else {
+                        alert('Erro ao excluir componente: ' + (response.message || 'Erro desconhecido'));
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert('Erro ao excluir componente: ' + error);
+                }
+            });
+        });
+        
+        // Carregar cores ao selecionar um tecido no modal de componente
+        $(document).on('change', '#componente-tecido', function() {
+            const tecidoId = $(this).val();
+            carregarCoresTecido(tecidoId);
+        });
+        
+        // Salvar componente
+        $(document).on('click', '#salvar-componente', function() {
+            const componenteId = $('#componente-id').val();
+            const combinacaoId = $('#componente-combinacao-id').val();
+            const tecidoId = $('#componente-tecido').val();
+            const corOption = $('#componente-cor option:selected');
+            const cor = corOption.val();
+            const codigoCor = corOption.data('codigo');
+            const consumo = $('#componente-consumo').val();
+            
+            if (!tecidoId || !cor || !consumo) {
+                alert('Por favor, preencha todos os campos obrigatórios.');
+                return;
+            }
+            
+            const data = {
+                tecido_id: tecidoId,
+                cor: cor,
+                codigo_cor: codigoCor,
+                consumo: consumo,
+                _token: '{{ csrf_token() }}'
+            };
+            
+            let url, method;
+            
+            if (componenteId) {
+                // Edição
+                url = '{{ url("combinacoes/componentes") }}/' + componenteId;
+                method = 'PUT';
+            } else {
+                // Novo componente
+                url = '{{ url("combinacoes") }}/' + combinacaoId + '/componentes';
+                method = 'POST';
+            }
+            
+            $.ajax({
+                url: url,
+                method: method,
+                data: data,
+                success: function(response) {
+                    if (response.success) {
+                        $('#modal-componente').addClass('hidden');
+                        carregarCombinacoes();
+                    } else {
+                        alert('Erro ao salvar componente: ' + (response.message || 'Erro desconhecido'));
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert('Erro ao salvar componente: ' + error);
+                }
+            });
+        });
+    });
+</script>
+@endpush
+</x-app-layout>

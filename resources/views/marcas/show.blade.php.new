@@ -1,0 +1,219 @@
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ __('Detalhes da Marca') }}: {{ $marca->nome_marca }}
+            </h2>
+            <div class="flex space-x-2">
+                <a href="{{ route('marcas.edit', $marca) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Editar
+                </a>
+                <a href="{{ route('marcas.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Voltar
+                </a>
+            </div>
+        </div>
+    </x-slot>
+
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <!-- Informações Básicas e Total de Produtos -->
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                <div class="p-6">
+                    <div class="flex flex-col md:flex-row md:justify-between md:items-center">
+                        <div>
+                            <div class="flex items-center">
+                                @if($marca->logo_path)
+                                    <div class="mr-4">
+                                        <img src="{{ asset('storage/' . $marca->logo_path) }}" alt="Logo {{ $marca->nome_marca }}" class="w-16 h-16 object-contain rounded-md">
+                                    </div>
+                                @endif
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-900">{{ $marca->nome_marca }}</h3>
+                                    <div class="mt-1 flex items-center">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $marca->ativo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                            {{ $marca->ativo ? 'Ativo' : 'Inativo' }}
+                                        </span>
+                                        <span class="ml-2 text-sm text-gray-500">
+                                            Cadastrada em {{ $marca->created_at->format('d/m/Y') }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 md:mt-0">
+                            <a href="{{ route('produtos.index', ['marca' => $marca->id]) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                Ver {{ $estatisticas['totalProdutos'] }} produtos
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Estatísticas -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Produtos por Estilista -->
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                        <h3 class="text-lg font-medium text-gray-900">Por Estilista</h3>
+                        <button id="toggle-estilistas" class="flex items-center text-sm text-gray-500 hover:text-gray-700 focus:outline-none" aria-expanded="true" aria-controls="estilistas-content">
+                            <span class="mr-1">Expandir/Recolher</span>
+                            <svg class="w-4 h-4 transform rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="estilistas-content" class="px-6 py-4 transition-all duration-300 ease-in-out">
+                        @if(count($estatisticas['produtosPorEstilista']) > 0)
+                            <ul class="divide-y divide-gray-200">
+                                @foreach($estatisticas['produtosPorEstilista'] as $estilista => $total)
+                                    <li class="py-3 flex justify-between items-center">
+                                        <span class="text-sm font-medium text-gray-900">{{ $estilista }}</span>
+                                        <a href="{{ route('produtos.index', ['marca' => $marca->id, 'estilista' => $estilista]) }}" class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 hover:bg-indigo-200">
+                                            {{ $total }} {{ $total == 1 ? 'produto' : 'produtos' }}
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <p class="text-sm text-gray-500">Nenhum produto associado a um estilista.</p>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Produtos por Localização -->
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                        <h3 class="text-lg font-medium text-gray-900">Por Localização</h3>
+                        <button id="toggle-localizacoes" class="flex items-center text-sm text-gray-500 hover:text-gray-700 focus:outline-none" aria-expanded="true" aria-controls="localizacoes-content">
+                            <span class="mr-1">Expandir/Recolher</span>
+                            <svg class="w-4 h-4 transform rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="localizacoes-content" class="px-6 py-4 transition-all duration-300 ease-in-out">
+                        @if(count($estatisticas['produtosPorLocalizacao']) > 0)
+                            <ul class="divide-y divide-gray-200">
+                                @foreach($estatisticas['produtosPorLocalizacao'] as $localizacao => $total)
+                                    <li class="py-3 flex justify-between items-center">
+                                        <span class="text-sm font-medium text-gray-900">{{ $localizacao }}</span>
+                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            {{ $total }} {{ $total == 1 ? 'produto' : 'produtos' }}
+                                        </span>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <p class="text-sm text-gray-500">Nenhum produto com localização definida.</p>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Produtos por Grupo -->
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                        <h3 class="text-lg font-medium text-gray-900">Por Grupo</h3>
+                        <button id="toggle-grupos" class="flex items-center text-sm text-gray-500 hover:text-gray-700 focus:outline-none" aria-expanded="true" aria-controls="grupos-content">
+                            <span class="mr-1">Expandir/Recolher</span>
+                            <svg class="w-4 h-4 transform rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="grupos-content" class="px-6 py-4 transition-all duration-300 ease-in-out">
+                        @if(count($estatisticas['produtosPorGrupo']) > 0)
+                            <ul class="divide-y divide-gray-200">
+                                @foreach($estatisticas['produtosPorGrupo'] as $grupo => $total)
+                                    <li class="py-3 flex justify-between items-center">
+                                        <span class="text-sm font-medium text-gray-900">{{ $grupo }}</span>
+                                        <a href="{{ route('produtos.index', ['marca' => $marca->id, 'grupo' => $grupo]) }}" class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 hover:bg-purple-200">
+                                            {{ $total }} {{ $total == 1 ? 'produto' : 'produtos' }}
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <p class="text-sm text-gray-500">Nenhum produto associado a um grupo.</p>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Produtos por Status -->
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                        <h3 class="text-lg font-medium text-gray-900">Por Status</h3>
+                        <button id="toggle-status" class="flex items-center text-sm text-gray-500 hover:text-gray-700 focus:outline-none" aria-expanded="true" aria-controls="status-content">
+                            <span class="mr-1">Expandir/Recolher</span>
+                            <svg class="w-4 h-4 transform rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="status-content" class="px-6 py-4 transition-all duration-300 ease-in-out">
+                        @if(count($estatisticas['produtosPorStatus']) > 0)
+                            <ul class="divide-y divide-gray-200">
+                                @foreach($estatisticas['produtosPorStatus'] as $status => $total)
+                                    <li class="py-3 flex justify-between items-center">
+                                        <span class="text-sm font-medium text-gray-900">{{ $status }}</span>
+                                        <a href="{{ route('produtos.index', ['marca' => $marca->id, 'status' => $status]) }}" class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200">
+                                            {{ $total }} {{ $total == 1 ? 'produto' : 'produtos' }}
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <p class="text-sm text-gray-500">Nenhum produto com status definido.</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Setup toggle functionality for all statistics sections
+            const toggles = [
+                { button: 'toggle-estilistas', content: 'estilistas-content' },
+                { button: 'toggle-localizacoes', content: 'localizacoes-content' },
+                { button: 'toggle-grupos', content: 'grupos-content' },
+                { button: 'toggle-status', content: 'status-content' }
+            ];
+
+            toggles.forEach(function(toggle) {
+                const button = document.getElementById(toggle.button);
+                const content = document.getElementById(toggle.content);
+                const icon = button.querySelector('svg');
+
+                button.addEventListener('click', function() {
+                    // Toggle the content visibility with animation
+                    if (content.classList.contains('h-0')) {
+                        content.classList.remove('h-0', 'overflow-hidden', 'py-0');
+                        content.classList.add('py-4');
+                        icon.classList.add('rotate-180');
+                        button.setAttribute('aria-expanded', 'true');
+                    } else {
+                        content.classList.add('h-0', 'overflow-hidden', 'py-0');
+                        content.classList.remove('py-4');
+                        icon.classList.remove('rotate-180');
+                        button.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            });
+        });
+    </script>
+    @endpush
+</x-app-layout>

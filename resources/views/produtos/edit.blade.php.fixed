@@ -1,0 +1,20 @@
+<?php
+// Create a temporary file with all the fixed URLs
+?>
+// Fix for tecidos.cores.get route
+url: '{{ url("tecidos") }}/' + tecidoId + '/cores',
+
+// Fix for produtos.combinacoes.destroy route
+url: '{{ url("produtos/combinacoes") }}/' + combinacaoId,
+
+// Fix for produtos.combinacoes.update route
+url: '{{ url("produtos/combinacoes") }}/' + combinacaoId,
+
+// Fix for combinacoes.componentes.remove route
+url: '{{ url("combinacoes/componentes") }}/' + componenteId,
+
+// Fix for combinacoes.componentes.update route
+url: '{{ url("combinacoes/componentes") }}/' + componenteId,
+
+// Fix for combinacoes.componentes.add route
+url: '{{ url("combinacoes") }}/' + combinacaoId + '/componentes',

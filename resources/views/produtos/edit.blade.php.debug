@@ -1,0 +1,25 @@
+// Add this to the beginning of the script section to help debug the issue
+console.log('Script loaded');
+
+// Add these debug statements to key functions
+function updateColorVariations() {
+    console.log('updateColorVariations called');
+    // Rest of the function...
+}
+
+function renderCores(cores) {
+    console.log('renderCores called with', cores);
+    // Rest of the function...
+}
+
+// Make sure the AJAX URL is correct
+url: '{{ url("produtos/get-available-colors") }}',
+
+// Ensure the coresContainer variable is correctly defined
+const coresContainer = $('#cores-container');
+
+// Make sure the initial call to load colors happens
+setTimeout(function() {
+    console.log('Initial color load timeout fired');
+    updateColorVariations();
+}, 1500);
