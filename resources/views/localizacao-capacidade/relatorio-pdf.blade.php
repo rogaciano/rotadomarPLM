@@ -274,9 +274,9 @@
                     @php
                         // Agrupar produtos por referência + descrição + marca + grupo + qtd total + data + status
                         $produtosAgrupados = $dado['produtos']->groupBy(function($produto) {
-                            $primeiraData = $produto->localizacoes()
-                                ->whereNotNull('data_prevista_faccao')
-                                ->orderBy('data_prevista_faccao', 'asc')
+                            $primeiraData = $produto->localizacoes
+                                ->whereNotNull('pivot.data_prevista_faccao')
+                                ->sortBy('pivot.data_prevista_faccao')
                                 ->first();
                             
                             $dataFormatada = 'N/A';
@@ -337,14 +337,12 @@
                                             $obs = \App\Models\ProdutoObservacao::where('produto_id', $produtoPrincipal->id)->get();
 
                                             // Carregar todas as observações das localizações de todas as alocações
+                                            // USAR localizacoes (sem parênteses) para pegar a collection já filtrada
                                             $todasObsLocalizacoes = collect();
                                             foreach($produtosGrupo as $produto) {
-                                                $obsLoc = $produto->localizacoes()
-                                                    ->where(function($q) {
-                                                        $q->whereNotNull('ordem_producao')
-                                                          ->orWhereNotNull('produto_localizacao.observacao');
-                                                    })
-                                                    ->get();
+                                                $obsLoc = $produto->localizacoes->filter(function($loc) {
+                                                    return !empty($loc->pivot->ordem_producao) || !empty($loc->pivot->observacao);
+                                                });
                                                 $todasObsLocalizacoes = $todasObsLocalizacoes->merge($obsLoc);
                                             }
                                             
@@ -390,8 +388,8 @@
                                                         // Buscar a quantidade alocada para esta ordem de produção
                                                         $qtdAlocada = 0;
                                                         foreach($produtosGrupo as $produto) {
-                                                            $localizacaoAtual = $produto->localizacoes()
-                                                                ->where('ordem_producao', $loc->pivot->ordem_producao)
+                                                            $localizacaoAtual = $produto->localizacoes
+                                                                ->where('pivot.ordem_producao', $loc->pivot->ordem_producao)
                                                                 ->first();
                                                             if ($localizacaoAtual) {
                                                                 $qtdAlocada = $localizacaoAtual->pivot->quantidade ?? 0;

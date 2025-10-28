@@ -343,14 +343,12 @@
                                                                             $obs = \App\Models\ProdutoObservacao::where('produto_id', $produtoPrincipal->id)->get();
 
                                                                             // Carregar todas as observações das localizações de todas as alocações
+                                                                            // USAR localizacoes (sem parênteses) para pegar a collection já filtrada
                                                                             $todasObsLocalizacoes = collect();
                                                                             foreach($produtosGrupo as $produto) {
-                                                                                $obsLoc = $produto->localizacoes()
-                                                                                    ->where(function($q) {
-                                                                                        $q->whereNotNull('ordem_producao')
-                                                                                          ->orWhereNotNull('produto_localizacao.observacao');
-                                                                                    })
-                                                                                    ->get();
+                                                                                $obsLoc = $produto->localizacoes->filter(function($loc) {
+                                                                                    return !empty($loc->pivot->ordem_producao) || !empty($loc->pivot->observacao);
+                                                                                });
                                                                                 $todasObsLocalizacoes = $todasObsLocalizacoes->merge($obsLoc);
                                                                             }
                                                                             
