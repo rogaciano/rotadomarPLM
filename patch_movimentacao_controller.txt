@@ -1,0 +1,45 @@
+=== INSTRUÇÕES PARA ADICIONAR O FILTRO POR STATUS DE DIAS ===
+
+Você já tem o MovimentacaoFilterController implementado com a lógica de filtro.
+Agora, siga estas instruções para adicionar o filtro ao MovimentacaoController:
+
+1. Abra o arquivo MovimentacaoController.php
+
+2. Adicione o seguinte import no topo do arquivo (junto com os outros imports):
+   use App\Http\Controllers\MovimentacaoFilterController;
+
+3. Localize o trecho de código no método index (aproximadamente linha 130):
+
+   // Adicionar filtro para o campo concluido
+   if ($request->filled('concluido')) {
+       $query->where('concluido', $request->concluido);
+   }
+
+   // Ordenação
+
+4. Adicione o seguinte código entre o filtro de concluido e a ordenação:
+
+   // Filtro por status de dias (Atrasados, Em Dia)
+   if ($request->filled('status_dias')) {
+       $query = MovimentacaoFilterController::applyStatusDiasFilter($query, $request->status_dias);
+   }
+
+5. Repita o mesmo processo no método generateListPdf (aproximadamente linha 488):
+
+   // Adicionar filtro para o campo concluido
+   if ($request->filled('concluido')) {
+       $query->where('concluido', $request->concluido);
+   }
+
+   // Ordenação
+
+6. Adicione o mesmo código entre o filtro de concluido e a ordenação:
+
+   // Filtro por status de dias (Atrasados, Em Dia)
+   if ($request->filled('status_dias')) {
+       $query = MovimentacaoFilterController::applyStatusDiasFilter($query, $request->status_dias);
+   }
+
+7. Salve o arquivo e teste a funcionalidade.
+
+=== FIM DAS INSTRUÇÕES ===
