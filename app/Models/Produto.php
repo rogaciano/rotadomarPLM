@@ -175,19 +175,13 @@ class Produto extends Model
 
     /**
      * Verifica se este produto pode ter movimentações
-     * Produtos origem podem ter movimentação se não tiverem reprogramações
-     * Produtos reprogramados só podem ter movimentação se forem a última reprogramação
+     * Todos os produtos podem ser movimentados (incluindo reprogramados)
      */
     public function podeMovimentar()
     {
-        // Se não é reprogramação (produto original)
-        if (!$this->isReprogramacao()) {
-            // Verifica se não tem reprogramações
-            return $this->reprogramacoes()->count() == 0;
-        }
-
-        // Se é reprogramação, verifica se é a última
-        return $this->isUltimaReprogramacao();
+        // LIBERADO: Todos os produtos podem ser movimentados
+        // Removida a restrição de apenas última reprogramação
+        return true;
     }
 
     /**

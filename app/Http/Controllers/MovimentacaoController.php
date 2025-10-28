@@ -351,7 +351,7 @@ class MovimentacaoController extends Controller
         // Verificar se o produto pode ter movimentações
         $produto = Produto::findOrFail($validated['produto_id']);
         if (!$produto->podeMovimentar()) {
-            return back()->withInput()->with('error', 'Este produto não pode ter movimentações. Apenas o último produto de uma reprogramação pode ser movimentado.');
+            return back()->withInput()->with('error', 'Este produto não pode ter movimentações. Contate o administrador.');
         }
 
         try {
@@ -466,7 +466,7 @@ class MovimentacaoController extends Controller
         // Verificar se o produto pode ter movimentações
         $produto = Produto::findOrFail($validated['produto_id']);
         if (!$produto->podeMovimentar()) {
-            return back()->withInput()->with('error', 'Este produto não pode ter movimentações. Apenas o último produto de uma reprogramação pode ser movimentado.');
+            return back()->withInput()->with('error', 'Este produto não pode ter movimentações. Contate o administrador.');
         }
 
         // Upload de anexo se existir

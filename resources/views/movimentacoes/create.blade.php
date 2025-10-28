@@ -50,7 +50,7 @@
                                         </p>
                                         @if(!$produto_selecionado->podeMovimentar())
                                             <p class="mt-2 text-sm text-red-700 font-semibold">
-                                                ⚠️ ATENÇÃO: Este produto não pode ter movimentações. Apenas o último produto de uma reprogramação pode ser movimentado.
+                                                ⚠️ ATENÇÃO: Este produto não pode ter movimentações. Contate o administrador.
                                             </p>
                                         @endif
                                     </div>
