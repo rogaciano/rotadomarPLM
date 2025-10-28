@@ -251,9 +251,17 @@ class LocalizacaoCapacidadeMensalController extends Controller
         // Adicionar informações de produtos previstos
         $dadosDashboard = $capacidades->map(function ($capacidade) use ($mes, $ano) {
             // Buscar alocações para esta localização no período
+            // FILTRO CORRIGIDO: Considerar apenas produtos com data_prevista_faccao no mês/ano selecionado
             $alocacoes = \App\Models\ProdutoAlocacaoMensal::where('localizacao_id', $capacidade->localizacao_id)
                 ->where('mes', $mes)
                 ->where('ano', $ano)
+                ->whereHas('produto', function($query) use ($mes, $ano) {
+                    $query->whereHas('localizacoes', function($subQuery) use ($mes, $ano) {
+                        $subQuery->whereNotNull('data_prevista_faccao')
+                               ->whereMonth('data_prevista_faccao', $mes)
+                               ->whereYear('data_prevista_faccao', $ano);
+                    });
+                })
                 ->with(['produto.marca', 'produto.grupoProduto', 'produto.status'])
                 ->orderBy('created_at')
                 ->get();
@@ -736,9 +744,17 @@ class LocalizacaoCapacidadeMensalController extends Controller
         // Adicionar informações de produtos previstos
         $dadosDashboard = $capacidades->map(function ($capacidade) use ($mes, $ano) {
             // Buscar alocações para esta localização no período
+            // FILTRO CORRIGIDO: Considerar apenas produtos com data_prevista_faccao no mês/ano selecionado
             $alocacoes = \App\Models\ProdutoAlocacaoMensal::where('localizacao_id', $capacidade->localizacao_id)
                 ->where('mes', $mes)
                 ->where('ano', $ano)
+                ->whereHas('produto', function($query) use ($mes, $ano) {
+                    $query->whereHas('localizacoes', function($subQuery) use ($mes, $ano) {
+                        $subQuery->whereNotNull('data_prevista_faccao')
+                               ->whereMonth('data_prevista_faccao', $mes)
+                               ->whereYear('data_prevista_faccao', $ano);
+                    });
+                })
                 ->with(['produto.marca', 'produto.grupoProduto', 'produto.status'])
                 ->orderBy('created_at')
                 ->get();
