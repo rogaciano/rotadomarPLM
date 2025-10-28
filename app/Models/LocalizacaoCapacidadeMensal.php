@@ -47,11 +47,12 @@ class LocalizacaoCapacidadeMensal extends Model
     // Método para calcular a quantidade total de produtos previstos para este período
     public function getProdutosPrevistos()
     {
-        // Somar as quantidades das alocações mensais (a alocação já tem mês/ano correto)
-        $total = \App\Models\ProdutoAlocacaoMensal::where('localizacao_id', $this->localizacao_id)
-            ->where('mes', $this->mes)
-            ->where('ano', $this->ano)
-            ->whereNotNull('quantidade')
+        // Buscar diretamente de produto_localizacao pela data_prevista_faccao
+        $total = \DB::table('produto_localizacao')
+            ->where('localizacao_id', $this->localizacao_id)
+            ->whereMonth('data_prevista_faccao', $this->mes)
+            ->whereYear('data_prevista_faccao', $this->ano)
+            ->whereNull('deleted_at')
             ->sum('quantidade');
         
         // Garantir que retorna um inteiro válido

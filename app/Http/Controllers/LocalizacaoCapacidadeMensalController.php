@@ -114,23 +114,23 @@ class LocalizacaoCapacidadeMensalController extends Controller
     {
         $capacidade = LocalizacaoCapacidadeMensal::with('localizacao')->findOrFail($id);
         
-        // Buscar alocações para este período
-        $alocacoes = \App\Models\ProdutoAlocacaoMensal::where('localizacao_id', $capacidade->localizacao_id)
-            ->where('mes', $capacidade->mes)
-            ->where('ano', $capacidade->ano)
-            ->with(['produto.marca', 'produto.grupoProduto', 'produto.observacoes'])
-            ->orderBy('created_at')
-            ->get();
-
-        // Transformar alocações em produtos para compatibilidade com a view
-        $produtos = $alocacoes->map(function($alocacao) {
-            $produto = $alocacao->produto;
-            if ($produto) {
-                $produto->quantidade = $alocacao->quantidade;
-                // data_prevista_faccao agora está em produto_localizacao (pode ter múltiplas datas)
-            }
+        // Buscar produtos diretamente pela data_prevista_faccao
+        $produtos = \App\Models\Produto::whereHas('localizacoes', function($query) use ($capacidade) {
+            $query->where('localizacao_id', $capacidade->localizacao_id)
+                  ->whereMonth('data_prevista_faccao', $capacidade->mes)
+                  ->whereYear('data_prevista_faccao', $capacidade->ano);
+        })
+        ->with(['marca', 'grupoProduto', 'observacoes', 'localizacoes' => function($query) use ($capacidade) {
+            $query->where('localizacao_id', $capacidade->localizacao_id)
+                  ->whereMonth('data_prevista_faccao', $capacidade->mes)
+                  ->whereYear('data_prevista_faccao', $capacidade->ano);
+        }])
+        ->get()
+        ->map(function($produto) {
+            // Adicionar quantidade do pivot para compatibilidade com a view
+            $produto->quantidade = $produto->localizacoes->sum('pivot.quantidade');
             return $produto;
-        })->filter();
+        });
 
         return view('localizacao-capacidade.show', compact('capacidade', 'produtos'));
     }
@@ -250,28 +250,23 @@ class LocalizacaoCapacidadeMensalController extends Controller
 
         // Adicionar informações de produtos previstos
         $dadosDashboard = $capacidades->map(function ($capacidade) use ($mes, $ano) {
-            // Buscar alocações para esta localização no período
-            // A alocação já contém o mês/ano correto extraído da data_prevista_faccao pelo Observer
-            $alocacoes = \App\Models\ProdutoAlocacaoMensal::where('localizacao_id', $capacidade->localizacao_id)
-                ->where('mes', $mes)
-                ->where('ano', $ano)
-                ->with(['produto.marca', 'produto.grupoProduto', 'produto.status'])
-                ->orderBy('created_at')
-                ->get();
-
-            // Transformar alocações em produtos para compatibilidade com a view
-            $produtos = $alocacoes->map(function($alocacao) {
-                $produto = $alocacao->produto;
-                if ($produto) {
-                    // Criar uma cópia do produto para evitar referências compartilhadas
-                    $produtoCopia = clone $produto;
-                    $produtoCopia->quantidade_alocada = $alocacao->quantidade;
-                    $produtoCopia->alocacao_id = $alocacao->id;
-                    $produtoCopia->tipo_alocacao = $alocacao->tipo;
-                    return $produtoCopia;
-                }
-                return null;
-            })->filter(); // Remove nulls
+            // Buscar produtos diretamente pela data_prevista_faccao em produto_localizacao
+            $produtos = \App\Models\Produto::whereHas('localizacoes', function($query) use ($capacidade, $mes, $ano) {
+                $query->where('localizacao_id', $capacidade->localizacao_id)
+                      ->whereMonth('data_prevista_faccao', $mes)
+                      ->whereYear('data_prevista_faccao', $ano);
+            })
+            ->with(['marca', 'grupoProduto', 'status', 'localizacoes' => function($query) use ($capacidade, $mes, $ano) {
+                $query->where('localizacao_id', $capacidade->localizacao_id)
+                      ->whereMonth('data_prevista_faccao', $mes)
+                      ->whereYear('data_prevista_faccao', $ano);
+            }])
+            ->get()
+            ->map(function($produto) {
+                // Adicionar quantidade_alocada do pivot
+                $produto->quantidade_alocada = $produto->localizacoes->sum('pivot.quantidade');
+                return $produto;
+            });
 
             return [
                 'localizacao' => $capacidade->localizacao,
@@ -736,28 +731,23 @@ class LocalizacaoCapacidadeMensalController extends Controller
 
         // Adicionar informações de produtos previstos
         $dadosDashboard = $capacidades->map(function ($capacidade) use ($mes, $ano) {
-            // Buscar alocações para esta localização no período
-            // A alocação já contém o mês/ano correto extraído da data_prevista_faccao pelo Observer
-            $alocacoes = \App\Models\ProdutoAlocacaoMensal::where('localizacao_id', $capacidade->localizacao_id)
-                ->where('mes', $mes)
-                ->where('ano', $ano)
-                ->with(['produto.marca', 'produto.grupoProduto', 'produto.status'])
-                ->orderBy('created_at')
-                ->get();
-
-            // Transformar alocações em produtos
-            $produtos = $alocacoes->map(function($alocacao) {
-                $produto = $alocacao->produto;
-                if ($produto) {
-                    // Criar uma cópia do produto para evitar referências compartilhadas
-                    $produtoCopia = clone $produto;
-                    $produtoCopia->quantidade_alocada = $alocacao->quantidade;
-                    $produtoCopia->alocacao_id = $alocacao->id;
-                    $produtoCopia->tipo_alocacao = $alocacao->tipo;
-                    return $produtoCopia;
-                }
-                return null;
-            })->filter();
+            // Buscar produtos diretamente pela data_prevista_faccao em produto_localizacao
+            $produtos = \App\Models\Produto::whereHas('localizacoes', function($query) use ($capacidade, $mes, $ano) {
+                $query->where('localizacao_id', $capacidade->localizacao_id)
+                      ->whereMonth('data_prevista_faccao', $mes)
+                      ->whereYear('data_prevista_faccao', $ano);
+            })
+            ->with(['marca', 'grupoProduto', 'status', 'localizacoes' => function($query) use ($capacidade, $mes, $ano) {
+                $query->where('localizacao_id', $capacidade->localizacao_id)
+                      ->whereMonth('data_prevista_faccao', $mes)
+                      ->whereYear('data_prevista_faccao', $ano);
+            }])
+            ->get()
+            ->map(function($produto) {
+                // Adicionar quantidade_alocada do pivot
+                $produto->quantidade_alocada = $produto->localizacoes->sum('pivot.quantidade');
+                return $produto;
+            });
 
             return [
                 'localizacao' => $capacidade->localizacao,
