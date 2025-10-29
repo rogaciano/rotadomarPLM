@@ -129,13 +129,8 @@ class LocalizacaoController extends Controller
         
         // Enriquecer capacidades com dados calculados
         $resumoMensal = $capacidades->map(function($capacidade) {
-            // Buscar alocações para este período
-            $alocacoes = \App\Models\ProdutoAlocacaoMensal::where('localizacao_id', $capacidade->localizacao_id)
-                ->where('mes', $capacidade->mes)
-                ->where('ano', $capacidade->ano)
-                ->with(['produto.marca', 'produto.grupoProduto', 'produto.status'])
-                ->orderBy('created_at')
-                ->get();
+            // NOTA: produto_alocacao_mensal foi removido
+            // Agora os produtos são buscados diretamente de produto_localizacao
             
             return [
                 'capacidade' => $capacidade,
@@ -143,8 +138,8 @@ class LocalizacaoController extends Controller
                 'saldo' => $capacidade->getSaldo(),
                 'percentual' => $capacidade->getPercentualOcupacao(),
                 'acima_capacidade' => $capacidade->isAcimaDaCapacidade(),
-                'alocacoes' => $alocacoes,
-                'total_alocacoes' => $alocacoes->count()
+                'alocacoes' => collect([]), // Vazio - não usa mais alocações
+                'total_alocacoes' => 0
             ];
         });
         
